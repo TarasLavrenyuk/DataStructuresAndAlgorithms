@@ -1,6 +1,5 @@
-package com.lavreniuk.datastructuresalgorithms
+package com.lavreniuk.datastructuresalgorithms.sorting
 
-import com.lavreniuk.datastructuresalgorithms.sorting.BubbleSort
 import org.junit.Test
 import kotlin.test.assertTrue
 
