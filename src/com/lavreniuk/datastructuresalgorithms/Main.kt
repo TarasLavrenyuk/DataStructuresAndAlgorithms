@@ -15,5 +15,4 @@ object Main {
 
         queue.print()
     }
-
 }
