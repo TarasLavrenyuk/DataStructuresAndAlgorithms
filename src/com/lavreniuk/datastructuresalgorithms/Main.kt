@@ -1,24 +1,19 @@
 package com.lavreniuk.datastructuresalgorithms
 
-import com.lavreniuk.datastructuresalgorithms.stack.Stack
+import com.lavreniuk.datastructuresalgorithms.queue.Queue
 
 object Main {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        val stack = Stack<Int>()
-        stack.push(1)
-        stack.push(2)
-        println(stack.pop())
-        stack.push(3)
-        stack.push(4)
-        println(stack.top())
-        stack.push(5)
-        println(stack.top())
-        stack.push(6)
+        val queue = Queue<Int>()
+        queue.enqueue(1)
+        queue.enqueue(2)
+        queue.enqueue(3)
+        queue.enqueue(4)
+        queue.enqueue(5)
 
-        stack.print()
-        println(stack.size())
+        queue.print()
     }
 
 }
