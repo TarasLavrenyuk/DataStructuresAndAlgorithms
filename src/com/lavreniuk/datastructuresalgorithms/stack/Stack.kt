@@ -28,8 +28,8 @@ class Stack<T> {
     }
 
     fun top(): T? {
-        return head.let {
-            return@let it!!.data
+        return head?.let {
+            return@let it.data
         } ?: throw StackIsEmptyException()
     }
 
