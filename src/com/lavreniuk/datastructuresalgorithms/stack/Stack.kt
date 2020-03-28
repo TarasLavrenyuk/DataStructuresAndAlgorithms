@@ -10,18 +10,17 @@ class Stack<T> {
             Node<T?>(newData, head).also {
                 head = it
             }
-            size += 1
-            return
+        } else {
+            head = Node(newData, head)
         }
-        head = Node(newData, head)
-        size += 1
+        size++
     }
 
     fun pop(): T? {
         head?.let {
             val result = it.data
             head = head!!.next
-            size -= 1
+            size--
             return result
         }
         throw StackIsEmptyException()
