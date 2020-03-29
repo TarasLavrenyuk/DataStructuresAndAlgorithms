@@ -1,22 +1,40 @@
 package com.lavreniuk.datastructuresalgorithms.heap
 
-class Heap {
+abstract class Heap(
+    private val heapType: HeapType = HeapType.MIN_HEAP
+) {
 
     private var heapArray: Array<Int?> = arrayOfNulls(50)
 
     private var size = 0
 
     fun insert(data: Int) {
+        checkIfEnoughSpace()
+        balanceNewElement(addElement(data))
+    }
+
+    fun extractTop(): Int? {
+        val result = heapArray[1]
+        heapArray[1] = heapArray[size]
+        heapArray[size] = null
+        size--
+
+        balanceRoot(1)
+        return result
+    }
+
+    fun getTop(): Int? {
+        return heapArray[1]
+    }
+
+    /**
+     * @return position of new element in [heapArray]
+     */
+    private fun addElement(data: Int): Int {
         val newElementPosition = size + 1
         heapArray[newElementPosition] = data
         size++
-        balanceNewElement(newElementPosition)
-    }
-
-    private fun checkIfEnoughSpace() {
-        if (size + 1 == heapArray.size) {
-            heapArray = heapArray.copyOf(heapArray.size * 2)
-        }
+        return newElementPosition
     }
 
     private fun balanceNewElement(index: Int) {
@@ -24,10 +42,39 @@ class Heap {
             return
         }
         val parentIndex = index / 2
-        if (heapArray[index]!! < heapArray[parentIndex]!!) {
+        if (heapType.shouldBeSwappedWithParent(heapArray[index]!!, heapArray[parentIndex]!!)) {
             swap(index, parentIndex)
+            balanceNewElement(parentIndex)
         }
-        balanceNewElement(parentIndex)
+    }
+
+    private fun balanceRoot(index: Int) {
+        if (isEmpty()) return
+
+        val left = heapArray[leftChildIndex(index)]
+        val right = heapArray[rightChildIndex(index)]
+
+        when (heapType.shouldBeSwapped(heapArray[index]!!, left, right)) {
+            SwapCase.NO_SWAP -> return
+            SwapCase.WITH_LEFT -> {
+                leftChildIndex(index).let {
+                    swap(index, it)
+                    balanceRoot(it)
+                }
+            }
+            SwapCase.WITH_RIGHT -> {
+                rightChildIndex(index).let {
+                    swap(index, it)
+                    balanceRoot(it)
+                }
+            }
+        }
+    }
+
+    private fun checkIfEnoughSpace() {
+        if (size + 1 == heapArray.size) {
+            heapArray = heapArray.copyOf((heapArray.size * SCALE_HEAP_SIZE_FACTOR).toInt())
+        }
     }
 
     private fun swap(index1: Int, index2: Int) {
@@ -36,50 +83,6 @@ class Heap {
         heapArray[index2] = temp
     }
 
-    fun getMin(): Int? {
-        return heapArray[1]
-    }
-
-    fun extractMin(): Int? {
-        val result = heapArray[1]
-        heapArray[1] = heapArray[size]
-        heapArray[size] = null
-        size--
-
-
-        balanceRoot(1)
-        return result
-    }
-
-    private fun balanceRoot(index: Int) {
-        val left = heapArray[leftChildIndex(index)]
-        val right = heapArray[rightChildIndex(index)]
-
-        // Leaf node case, node does not have any children
-        if (left == null && right == null) {
-            return
-        }
-
-        // In binary heap there is no case when a node has right child and
-        // does not have left child, so just check if right child is null.
-        // Besides that, there is no need for another function call, because
-        // if a node does not have right child, that means left node is a leaf
-        if (right == null) {
-            swap(index, leftChildIndex(index))
-            return
-        }
-
-        if (left!! < right) {
-            swap(index, leftChildIndex(index))
-            balanceRoot(leftChildIndex(index))
-        } else {
-            swap(index, rightChildIndex(index))
-            balanceRoot(rightChildIndex(index))
-        }
-    }
-
-    fun getOrderedArray() = heapArray.copyOfRange(1, size + 1)
-
     private fun leftChildIndex(parentIndex: Int) = parentIndex * 2
 
     private fun rightChildIndex(parentIndex: Int) = parentIndex * 2 + 1
@@ -87,4 +90,82 @@ class Heap {
     fun size() = size
 
     fun isEmpty() = size == 0
+
+    fun getAsArray() = heapArray.copyOfRange(1, size + 1)
+
+    companion object {
+        const val SCALE_HEAP_SIZE_FACTOR = 1.2
+    }
+
+    enum class HeapType {
+
+        MAX_HEAP {
+            override fun shouldBeSwapped(parent: Int, left: Int?, right: Int?): SwapCase {
+                return if (left == null && right == null) { // the node is leaf -> no swap
+                    SwapCase.NO_SWAP
+                } else if (right == null) { // right child is null
+                    if (parent < left!!) {
+                        SwapCase.WITH_LEFT
+                    } else {
+                        SwapCase.NO_SWAP
+                    }
+                } else { // both children are not null
+                    if (parent > left!! && parent > right) {
+                        SwapCase.NO_SWAP
+                    } else if (parent < left && parent < right) {
+                        if (left > right) {
+                            SwapCase.WITH_LEFT
+                        } else {
+                            SwapCase.WITH_RIGHT
+                        }
+                    } else if (left > parent) {
+                        SwapCase.WITH_LEFT
+                    } else {
+                        SwapCase.WITH_RIGHT
+                    }
+                }
+            }
+
+            override fun shouldBeSwappedWithParent(child: Int, parent: Int) = child > parent
+        },
+        MIN_HEAP {
+            override fun shouldBeSwapped(parent: Int, left: Int?, right: Int?): SwapCase {
+                return if (left == null && right == null) { // the node is leaf -> no swap
+                    SwapCase.NO_SWAP
+                } else if (right == null) { // right child is null
+                    if (parent > left!!) {
+                        SwapCase.WITH_LEFT
+                    } else {
+                        SwapCase.NO_SWAP
+                    }
+                } else { // both children are not null
+                    if (parent < left!! && parent < right) {
+                        SwapCase.NO_SWAP
+                    } else if (parent > left && parent > right) {
+                        if (left < right) {
+                            SwapCase.WITH_LEFT
+                        } else {
+                            SwapCase.WITH_RIGHT
+                        }
+                    } else if (left < parent) {
+                        SwapCase.WITH_LEFT
+                    } else {
+                        SwapCase.WITH_RIGHT
+                    }
+                }
+            }
+
+            override fun shouldBeSwappedWithParent(child: Int, parent: Int) = child < parent
+        };
+
+        abstract fun shouldBeSwapped(parent: Int, left: Int?, right: Int?): SwapCase
+
+        abstract fun shouldBeSwappedWithParent(child: Int, parent: Int): Boolean
+    }
+
+    enum class SwapCase {
+        NO_SWAP,
+        WITH_LEFT,
+        WITH_RIGHT;
+    }
 }
