@@ -57,6 +57,41 @@ class Trie {
         return false
     }
 
+    fun getSuggestions(startWord: String, limit: Int = 10): List<String> {
+        if (startWord.isBlank()) {
+            return emptyList()
+        }
+        val results = mutableListOf<String>()
+        getSuggestions(startWord, "", root, results, limit)
+        return results
+    }
+
+    private fun getSuggestions(
+
+        startWord: String,
+        currentWord: String,
+        node: Node,
+        results: MutableList<String>,
+        limit: Int
+    ) {
+        if (results.size > limit) return
+        if (startWord.isEmpty()) {
+            if (node.endOfWord) {
+                results.add(currentWord)
+            }
+            if (node.charMap.isNotEmpty()) {
+                node.charMap.forEach { (nextChar, nextNode) ->
+                    getSuggestions(startWord, currentWord + nextChar, nextNode, results, limit)
+                }
+            }
+        } else {
+            val nextChar = startWord[0]
+            node.charMap[nextChar]?.let { nextNode ->
+                getSuggestions(startWord.substring(1), currentWord + nextChar, nextNode, results, limit)
+            }
+        }
+
+    }
 
     private class Node {
         var endOfWord: Boolean = false;

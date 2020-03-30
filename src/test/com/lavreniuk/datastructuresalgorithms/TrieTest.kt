@@ -2,6 +2,7 @@ package com.lavreniuk.datastructuresalgorithms
 
 import com.lavreniuk.datastructuresalgorithms.trie.Trie
 import org.junit.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -41,5 +42,22 @@ class TrieTest {
 
         assertFalse(trie.search(word1))
         assertTrue(trie.search(word2))
+    }
+
+    @Test
+    fun `suggestion test`() {
+        val trie = Trie()
+        val word = "word"
+        trie.insert(word)
+        val words = listOf("${word}_one", "${word}_two", "${word}_three", "${word}_four", "${word}_five").also {
+            it.forEach { wordToInsert -> trie.insert(wordToInsert) }
+        }
+
+        val suggestions = trie.getSuggestions("${word}_")
+        assertEquals(5, suggestions.size)
+        assertEquals(
+            expected = words,
+            actual = suggestions
+        )
     }
 }
