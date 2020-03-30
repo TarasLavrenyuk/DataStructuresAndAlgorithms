@@ -11,7 +11,7 @@ class Trie {
     }
 
     private fun insert(word: String, node: Node) {
-        if (word.isEmpty()) {
+        if (word.isBlank()) {
             node.endOfWord = true
             return
         }
@@ -32,6 +32,31 @@ class Trie {
         nextNode ?: return false
         return search(word.substring(1), nextNode)
     }
+
+    fun delete(word: String): Boolean {
+        if (word.isBlank()) return false
+        return delete(word, root)
+    }
+
+    private fun delete(word: String, currentNode: Node): Boolean {
+        if (word.isEmpty()) {
+            if (currentNode.endOfWord) {
+                currentNode.endOfWord = false
+                return true
+            }
+        }
+        val currentChar = word[0]
+        currentNode.charMap[currentChar]?.let { nextNode ->
+            if (delete(word.substring(1), nextNode)) {
+                if (nextNode.charMap.isEmpty() && !nextNode.endOfWord) {
+                    currentNode.charMap.remove(currentChar)
+                }
+                return true
+            }
+        }
+        return false
+    }
+
 
     private class Node {
         var endOfWord: Boolean = false;
